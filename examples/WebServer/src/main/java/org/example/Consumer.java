@@ -1,5 +1,12 @@
 package org.example;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+
+import java.nio.charset.StandardCharsets;
+
 public class Consumer<T> extends Thread {
     private final int id;
     private final ThreadSafeQueue<T> queue;
@@ -16,6 +23,18 @@ public class Consumer<T> extends Thread {
                 // Wait for new element.
                 T elem = queue.pop();
 
+                Socket socket = (Socket) elem;
+                System.out.println("Got connection!");
+
+                // To read input from the client
+                BufferedReader input = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+
+
+                HttpRequest request = HttpRequest.parse(input);
+                Processor processor = new Processor(socket, request);
+                processor.process();
+
                 // Stop consuming if null is received.
                 if (elem == null) {
                     return;
@@ -27,6 +46,8 @@ public class Consumer<T> extends Thread {
         }
         catch (InterruptedException ex) {
             ex.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

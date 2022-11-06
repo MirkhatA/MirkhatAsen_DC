@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Processor of HTTP request.
  */
-public class Processor {
+public class Processor implements Runnable {
     private final Socket socket;
     private final HttpRequest request;
     private String requestStr;
@@ -22,8 +22,6 @@ public class Processor {
         requestStr = request.getRequestLine().split(" ")[1];
 
         // Print request that we received.
-        System.out.println("Got request:");
-        System.out.println(request.toString());
         System.out.flush();
 
         // To send response back to the client.
@@ -68,5 +66,14 @@ public class Processor {
         output.printf("<body><p> %s </p></body>", value.get(0));
         output.println("</html>");
         output.flush();
+    }
+
+    @Override
+    public void run() {
+        try {
+            process();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
